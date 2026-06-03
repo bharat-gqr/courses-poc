@@ -2,73 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const mentors = [
-  {
-    name: "Aarav Bhatia",
-    role: "Interview Mentor",
-    videos: 156,
-    views: "1.2M",
-    thumbnail:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    name: "Megha Singh",
-    role: "Career Coach",
-    videos: 94,
-    views: "860K",
-    thumbnail:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    name: "Rohit Menon",
-    role: "Freelance Mentor",
-    videos: 122,
-    views: "740K",
-    thumbnail:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    name: "Riya Patel",
-    role: "Communication Coach",
-    videos: 110,
-    views: "690K",
-    thumbnail:
-      "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    name: "Neeraj Kulkarni",
-    role: "Internship Mentor",
-    videos: 88,
-    views: "560K",
-    thumbnail:
-      "https://images.unsplash.com/photo-1504257432389-52343af06ae3?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    name: "Sana Farooq",
-    role: "Growth Strategist",
-    videos: 102,
-    views: "610K",
-    thumbnail:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    name: "Kabir Ahuja",
-    role: "AI Career Coach",
-    videos: 75,
-    views: "490K",
-    thumbnail:
-      "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    name: "Ishita Rao",
-    role: "Communication Mentor",
-    videos: 138,
-    views: "910K",
-    thumbnail:
-      "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=640&q=80",
-  },
-];
-
 const learningCards = [
   {
     title: "Interview Confidence Bootcamp",
@@ -141,7 +74,7 @@ const topRankedCards = [
     description: "Improve click-through with better titles and thumbnails.",
     duration: "8 clips",
     thumbnail:
-      "https://images.unsplash.com/photo-1551281044-8b55d7f6c6b1?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1556155092-490a1ba16284?auto=format&fit=crop&w=1000&q=80",
   },
   {
     title: "Learner Journey Design",
@@ -307,68 +240,6 @@ function LearningCarousel({ cards }) {
   );
 }
 
-function MentorCarousel({ mentors }) {
-  const [index, setIndex] = useState(0);
-  const [cardsPerView, setCardsPerView] = useState(4);
-
-  useEffect(() => {
-    const update = () => {
-      if (window.innerWidth < 720) setCardsPerView(1);
-      else if (window.innerWidth < 1024) setCardsPerView(2);
-      else setCardsPerView(4);
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const maxIndex = Math.max(0, mentors.length - cardsPerView);
-
-  useEffect(() => {
-    if (index > maxIndex) setIndex(maxIndex);
-  }, [index, maxIndex]);
-
-  const goNext = () => setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-  const goPrev = () => setIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
-
-  return (
-    <div className="learningCarouselWrap">
-      <div className="learningViewport withCorners">
-        <button type="button" className="cornerNav left" onClick={goPrev} aria-label="Previous mentors">
-          ←
-        </button>
-
-        <div
-          className="learningTrack"
-          style={{
-            transform: `translateX(-${(100 / cardsPerView) * index}%)`,
-          }}
-        >
-          {mentors.map((mentor) => (
-            <article
-              className="mentorCard"
-              key={mentor.name}
-              style={{ flex: `0 0 ${100 / cardsPerView}%` }}
-            >
-              <img src={mentor.thumbnail} alt={mentor.name} className="mentorThumb" />
-              <h4>{mentor.name}</h4>
-              <p>{mentor.role}</p>
-              <div className="mentorMeta">
-                <span>{mentor.videos} videos</span>
-                <span>{mentor.views} views</span>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        <button type="button" className="cornerNav right" onClick={goNext} aria-label="Next mentors">
-          →
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function RankedCarousel({ cards }) {
   const [cardsPerView, setCardsPerView] = useState(5);
   const [index, setIndex] = useState(0);
@@ -452,7 +323,6 @@ function RankedCarousel({ cards }) {
 export default function Page() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [showAllForYou, setShowAllForYou] = useState(false);
-  const [showAllMentors, setShowAllMentors] = useState(false);
   const [showAllTestimonials, setShowAllTestimonials] = useState(false);
 
   useEffect(() => {
@@ -512,35 +382,9 @@ export default function Page() {
         )}
 
         <div className="sectionHead topTenHead">
-          <h3>For You Top 10</h3>
+          <h3>Top 10 On Grow<b>QR</b></h3>
         </div>
         <RankedCarousel cards={topRankedCards} />
-      </section>
-
-      <section className="sectionBlock">
-        <div className="sectionHead">
-          <h3>Learn from the best mentors</h3>
-          <button type="button" className="viewAllLink" onClick={() => setShowAllMentors((prev) => !prev)}>
-            {showAllMentors ? "Collapse" : "View all"}
-          </button>
-        </div>
-        {showAllMentors ? (
-          <div className="expandedGrid mentorsGrid">
-            {mentors.map((mentor) => (
-              <article className="mentorCard" key={mentor.name}>
-                <img src={mentor.thumbnail} alt={mentor.name} className="mentorThumb" />
-                <h4>{mentor.name}</h4>
-                <p>{mentor.role}</p>
-                <div className="mentorMeta">
-                  <span>{mentor.videos} videos</span>
-                  <span>{mentor.views} views</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <MentorCarousel mentors={mentors} />
-        )}
       </section>
 
       <section className="sectionBlock">
