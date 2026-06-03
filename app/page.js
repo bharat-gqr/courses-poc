@@ -120,6 +120,203 @@ const topRankedCards = [
   },
 ];
 
+const assignedCourses = [
+  {
+    id: "a1",
+    title: "Interview Confidence Bootcamp",
+    description: "Complete all clips before your mock interview round.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1000&q=80",
+    dueDate: daysFromNow(1),
+    progress: 72,
+    status: "in_progress",
+    assignedBy: "Career Coach",
+    format: "short",
+    skill: "Interview Prep",
+    nextClip: "STAR method in 60 seconds",
+    totalClips: 12,
+    completedClips: 9,
+  },
+  {
+    id: "a2",
+    title: "English Speaking for Interviews",
+    description: "Fluency drills assigned for placement week.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1000&q=80",
+    dueDate: daysFromNow(2),
+    progress: 35,
+    status: "in_progress",
+    assignedBy: "HR Team",
+    format: "short",
+    skill: "Communication",
+    nextClip: "Pronunciation warm-up drill",
+    totalClips: 15,
+    completedClips: 5,
+  },
+  {
+    id: "a3",
+    title: "Portfolio That Gets Replies",
+    description: "Submit proof of updated portfolio sections.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1000&q=80",
+    dueDate: daysFromNow(-2),
+    progress: 18,
+    status: "overdue",
+    assignedBy: "Mentor",
+    format: "long",
+    skill: "Career Growth",
+    nextClip: "Case study layout checklist",
+    totalClips: 8,
+    completedClips: 1,
+  },
+  {
+    id: "a4",
+    title: "AI Tools for Career Growth",
+    description: "Mandatory toolkit walkthrough for your cohort.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1000&q=80",
+    dueDate: daysFromNow(5),
+    progress: 0,
+    status: "not_started",
+    assignedBy: "Program Admin",
+    format: "short",
+    skill: "AI for Work",
+    nextClip: "Prompt templates for resumes",
+    totalClips: 9,
+    completedClips: 0,
+  },
+  {
+    id: "a5",
+    title: "30-Day Internship Roadmap",
+    description: "Daily checklist — stay on track for internship readiness.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1000&q=80",
+    dueDate: daysFromNow(7),
+    progress: 54,
+    status: "in_progress",
+    assignedBy: "Career Coach",
+    format: "long",
+    skill: "Internships",
+    nextClip: "Day 17 — outreach message draft",
+    totalClips: 30,
+    completedClips: 16,
+  },
+  {
+    id: "a6",
+    title: "Freelancer Pricing Fundamentals",
+    description: "Pricing scenarios and client negotiation practice.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1000&q=80",
+    dueDate: daysFromNow(14),
+    progress: 100,
+    status: "completed",
+    assignedBy: "Mentor",
+    format: "short",
+    skill: "Freelancing",
+    nextClip: "Final recap",
+    totalClips: 10,
+    completedClips: 10,
+  },
+];
+
+function daysFromNow(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+function getDueMeta(dueDateIso) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDateIso);
+  due.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    const n = Math.abs(diffDays);
+    return { label: n === 1 ? "Overdue by 1 day" : `Overdue by ${n} days`, tone: "overdue" };
+  }
+  if (diffDays === 0) return { label: "Due today", tone: "urgent" };
+  if (diffDays === 1) return { label: "Due tomorrow", tone: "urgent" };
+  if (diffDays <= 7) return { label: `Due in ${diffDays} days`, tone: "soon" };
+  return {
+    label: `Due ${due.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`,
+    tone: "normal",
+  };
+}
+
+function deriveStatus(course) {
+  if (course.status === "completed" || course.progress >= 100) return "completed";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(course.dueDate);
+  due.setHours(0, 0, 0, 0);
+  if (due < today && course.progress < 100) return "overdue";
+  if (course.progress > 0) return "in_progress";
+  return "not_started";
+}
+
+function clipsLeft(course) {
+  return Math.max(0, course.totalClips - course.completedClips);
+}
+
+function estMinutesLeft(course) {
+  return clipsLeft(course) * 4;
+}
+
+function getOverallReadiness(courses) {
+  const active = courses.filter((c) => deriveStatus(c) !== "completed");
+  if (active.length === 0) return 100;
+  const sum = active.reduce((acc, c) => acc + c.progress, 0);
+  return Math.round(sum / active.length);
+}
+
+function getContinueCourse(courses) {
+  const open = courses.filter((c) => deriveStatus(c) !== "completed");
+  const inProgress = open.filter((c) => deriveStatus(c) === "in_progress");
+  const pool = inProgress.length ? inProgress : open;
+  return [...pool].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0] ?? null;
+}
+
+function getFocusCourses(courses) {
+  return [...courses]
+    .filter((c) => deriveStatus(c) !== "completed")
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+    .slice(0, 3);
+}
+
+function getWeekTimeline(courses) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = [];
+
+  for (let i = 0; i < 7; i += 1) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    const label =
+      i === 0 ? "Today" : i === 1 ? "Tmrw" : d.toLocaleDateString("en-IN", { weekday: "short" });
+    const dueCourses = courses.filter((c) => {
+      if (deriveStatus(c) === "completed") return false;
+      const due = new Date(c.dueDate);
+      due.setHours(0, 0, 0, 0);
+      return due.getTime() === d.getTime();
+    });
+    days.push({ key, label, isToday: i === 0, count: dueCourses.length, courses: dueCourses });
+  }
+
+  return days;
+}
+
+const ASSIGNED_FILTERS = [
+  { id: "all", label: "All" },
+  { id: "in_progress", label: "In progress" },
+  { id: "not_started", label: "Not started" },
+  { id: "completed", label: "Completed" },
+  { id: "overdue", label: "Overdue" },
+];
+
 const testimonials = [
   {
     name: "Nikita, Delhi",
@@ -240,6 +437,326 @@ function LearningCarousel({ cards }) {
   );
 }
 
+function IconSearch() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+      <path d="M20 20L16 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconBookmark() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function PageTabBar({ activeTab, onChange }) {
+  return (
+    <nav className="pageTabBar" aria-label="Main sections">
+      <button
+        type="button"
+        className={`pageTab ${activeTab === "home" ? "active" : ""}`}
+        onClick={() => onChange("home")}
+        aria-pressed={activeTab === "home"}
+      >
+        Home
+      </button>
+      <button
+        type="button"
+        className={`pageTab ${activeTab === "assigned" ? "active" : ""}`}
+        onClick={() => onChange("assigned")}
+        aria-pressed={activeTab === "assigned"}
+      >
+        Assigned
+        <span className="tabBadge">{assignedCourses.filter((c) => deriveStatus(c) !== "completed").length}</span>
+      </button>
+    </nav>
+  );
+}
+
+function ReadinessRing({ value }) {
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (value / 100) * circumference;
+
+  return (
+    <div className="readinessRing" aria-label={`Learning readiness ${value} percent`}>
+      <svg viewBox="0 0 100 100" role="img">
+        <circle className="ringTrack" cx="50" cy="50" r={radius} />
+        <circle
+          className="ringProgress"
+          cx="50"
+          cy="50"
+          r={radius}
+          style={{ strokeDasharray: circumference, strokeDashoffset: offset }}
+        />
+      </svg>
+      <div className="ringCenter">
+        <strong>{value}%</strong>
+        <span>ready</span>
+      </div>
+    </div>
+  );
+}
+
+function ContinueLearningHero({ course }) {
+  if (!course) {
+    return (
+      <div className="continueHero complete">
+        <div>
+          <p className="heroEyebrow">All caught up</p>
+          <h2>Great work — every assignment is complete.</h2>
+          <p>Explore Home for new skills while you wait for the next cohort assignment.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const due = getDueMeta(course.dueDate);
+  const left = clipsLeft(course);
+  const minutes = estMinutesLeft(course);
+
+  return (
+    <article className={`continueHero tone-${due.tone}`}>
+      <img src={course.thumbnail} alt="" className="continueHeroBg" />
+      <div className="continueHeroOverlay" />
+      <div className="continueHeroContent">
+        <p className="heroEyebrow">Continue learning</p>
+        <h2>{course.title}</h2>
+        <p className="continueNextClip">
+          Up next: <strong>{course.nextClip}</strong>
+        </p>
+        <div className="continueHeroMeta">
+          <span className={`dueLabel tone-${due.tone}`}>{due.label}</span>
+          <span>
+            {left} clips left · ~{minutes} min
+          </span>
+          <span className="skillChip">{course.skill}</span>
+        </div>
+        <div className="progressTrack light" aria-hidden="true">
+          <span className="progressFill" style={{ width: `${course.progress}%` }} />
+        </div>
+        <button type="button" className="primaryBtn continueCta">
+          {deriveStatus(course) === "not_started" ? "Start course" : "Resume now"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function WeekTimeline({ courses }) {
+  const days = getWeekTimeline(courses);
+
+  return (
+    <div className="weekTimeline">
+      {days.map((day) => (
+        <div key={day.key} className={`weekDay ${day.isToday ? "isToday" : ""}`}>
+          <span className="weekDayLabel">{day.label}</span>
+          <div className={`weekDayDot ${day.count > 0 ? "hasDue" : ""} ${day.count > 1 ? "busy" : ""}`}>
+            {day.count > 0 ? day.count : ""}
+          </div>
+          {day.isToday && day.count > 0 && <span className="weekDayHint">{day.count} due</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FocusCard({ course, rank }) {
+  const due = getDueMeta(course.dueDate);
+  const left = clipsLeft(course);
+
+  return (
+    <article className={`focusCard tone-${due.tone}`}>
+      <span className="focusRank">#{rank}</span>
+      <img src={course.thumbnail} alt="" className="focusThumb" />
+      <div className="focusBody">
+        <span className="skillChip">{course.skill}</span>
+        <h4>{course.title}</h4>
+        <p className={`dueLabel tone-${due.tone}`}>{due.label}</p>
+        <div className="clipMeter">
+          <span>
+            {course.completedClips}/{course.totalClips} clips
+          </span>
+          <span>{left} left</span>
+        </div>
+        <div className="progressTrack" aria-hidden="true">
+          <span className="progressFill" style={{ width: `${course.progress}%` }} />
+        </div>
+        <button type="button" className="resumeBtn">
+          {deriveStatus(course) === "not_started" ? "Start" : "Resume"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function LearningPathCard({ course }) {
+  const due = getDueMeta(course.dueDate);
+  const status = deriveStatus(course);
+  const left = clipsLeft(course);
+  const minutes = estMinutesLeft(course);
+
+  return (
+    <article className={`pathCard status-${status}`}>
+      <div className="pathCardMedia">
+        <img src={course.thumbnail} alt="" />
+        <span className={`pathFormat ${course.format}`}>{course.format === "short" ? "Short" : "Long"}</span>
+      </div>
+      <div className="pathCardBody">
+        <div className="pathCardTop">
+          <div>
+            <span className="skillChip">{course.skill}</span>
+            <h4>{course.title}</h4>
+          </div>
+          <span className={`statusPill status-${status}`}>
+            {status === "in_progress"
+              ? "In progress"
+              : status === "not_started"
+                ? "Not started"
+                : status === "overdue"
+                  ? "Overdue"
+                  : "Completed"}
+          </span>
+        </div>
+        <p className="pathNext">Next: {course.nextClip}</p>
+        <div className="pathProgressRow">
+          <div className="progressTrack" aria-hidden="true">
+            <span className="progressFill" style={{ width: `${course.progress}%` }} />
+          </div>
+          <span>{course.progress}%</span>
+        </div>
+        <div className="pathMeta">
+          <span>
+            {course.completedClips}/{course.totalClips} clips · ~{minutes} min left
+          </span>
+          <span className={`dueLabel tone-${due.tone}`}>{due.label}</span>
+        </div>
+        <div className="pathFooter">
+          <span>Assigned by {course.assignedBy}</span>
+          <button type="button" className="resumeBtn compact">
+            {status === "completed" ? "Review" : status === "not_started" ? "Start" : "Resume"}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function AssignedView() {
+  const [filter, setFilter] = useState("all");
+  const readiness = getOverallReadiness(assignedCourses);
+  const continueCourse = getContinueCourse(assignedCourses);
+  const focusCourses = getFocusCourses(assignedCourses);
+
+  const openCount = assignedCourses.filter((c) => deriveStatus(c) !== "completed").length;
+  const clipsToday = assignedCourses
+    .filter((c) => deriveStatus(c) !== "completed")
+    .reduce((sum, c) => sum + clipsLeft(c), 0);
+
+  const sorted = [...assignedCourses].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  const filtered = sorted.filter((course) => {
+    const status = deriveStatus(course);
+    if (filter === "all") return true;
+    return status === filter;
+  });
+
+  return (
+    <div className="assignedView">
+      <section className="learnerDashboard">
+        <div className="dashboardIntro">
+          <ReadinessRing value={readiness} />
+          <div>
+            <p className="heroEyebrow">Your learning path</p>
+            <h2>
+              {openCount > 0
+                ? `${openCount} active assignments`
+                : "You are placement-ready on assigned work"}
+            </h2>
+            <p>
+              {clipsToday > 0
+                ? `Finish ~${Math.min(clipsToday, 3)} clips today to stay on track. Small steps compound.`
+                : "No open clips right now. Review completed courses or explore Home."}
+            </p>
+            <div className="dashboardPills">
+              <span>{openCount} open</span>
+              <span>{clipsToday} clips remaining</span>
+              <span>
+                {assignedCourses.filter((c) => deriveStatus(c) === "overdue").length} overdue
+              </span>
+            </div>
+          </div>
+        </div>
+        <ContinueLearningHero course={continueCourse} />
+      </section>
+
+      <section className="sectionBlock assignedSection timelineSection">
+        <div className="sectionHead">
+          <h3>This week</h3>
+          <span>Plan your learning rhythm</span>
+        </div>
+        <WeekTimeline courses={assignedCourses} />
+      </section>
+
+      {focusCourses.length > 0 && (
+        <section className="sectionBlock assignedSection">
+          <div className="sectionHead">
+            <h3>Focus queue</h3>
+            <span>Do these first — nearest deadlines</span>
+          </div>
+          <div className="focusQueue">
+            {focusCourses.map((course, idx) => (
+              <FocusCard key={course.id} course={course} rank={idx + 1} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="sectionBlock assignedSection">
+        <div className="sectionHead">
+          <h3>All learning paths</h3>
+          <span>{filtered.length} courses</span>
+        </div>
+
+        <div className="assignedFilterStrip">
+          {ASSIGNED_FILTERS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`categoryChip ${filter === item.id ? "active" : ""}`}
+              onClick={() => setFilter(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="assignedEmptyState">
+            <h4>No courses in this view</h4>
+            <p>Try another filter or check back when new assignments arrive.</p>
+          </div>
+        ) : (
+          <div className="pathCardList">
+            {filtered.map((course) => (
+              <LearningPathCard key={course.id} course={course} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function RankedCarousel({ cards }) {
   const [cardsPerView, setCardsPerView] = useState(5);
   const [index, setIndex] = useState(0);
@@ -321,6 +838,7 @@ function RankedCarousel({ cards }) {
 }
 
 export default function Page() {
+  const [activeTab, setActiveTab] = useState("home");
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [showAllForYou, setShowAllForYou] = useState(false);
   const [showAllTestimonials, setShowAllTestimonials] = useState(false);
@@ -337,26 +855,50 @@ export default function Page() {
   const goPrevTestimonial = () =>
     setTestimonialIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
+  const pendingAssigned = assignedCourses.filter((c) => deriveStatus(c) !== "completed").length;
+
   return (
     <main className="seekhoInspiredPage">
-      <header className="stickyTopNav">
-        <div className="brandBlock">
-          <span className="brandHalo" aria-hidden="true" />
-          <div>
-            <p>GrowQR Learn</p>
-            <h1>Short Learning Videos</h1>
+      <header className="appTopRail">
+        <div className="topRailBrand">
+          <span className="brandMark" aria-hidden="true">
+            GQ
+          </span>
+          <div className="topRailTitles">
+            <p className="topRailEyebrow">
+              Grow<b>QR</b> Videos
+            </p>
+            <p className="topRailTagline">
+              <span>Learn</span>
+              <span className="taglineDot" aria-hidden="true" />
+              <span>Verify</span>
+              <span className="taglineDot" aria-hidden="true" />
+              <span>Grow</span>
+            </p>
           </div>
         </div>
-        <div className="navCtas">
-          <button type="button" className="ghostBtn">
-            Download App
+
+        <PageTabBar activeTab={activeTab} onChange={setActiveTab} />
+
+        <div className="topRailUtils">
+          <button type="button" className="utilIconBtn" aria-label="Search videos">
+            <IconSearch />
           </button>
-          <button type="button" className="primaryBtn">
-            Start Learning
+          <button type="button" className="utilIconBtn" aria-label="Saved videos">
+            <IconBookmark />
+            {pendingAssigned > 0 ? (
+              <span className="utilBadge" aria-hidden="true">
+                {pendingAssigned}
+              </span>
+            ) : null}
           </button>
         </div>
       </header>
 
+      {activeTab === "assigned" ? (
+        <AssignedView />
+      ) : (
+        <>
       <section className="sectionBlock forYouSection">
         <div className="sectionHead">
           <h3>For You Videos</h3>
@@ -433,6 +975,8 @@ export default function Page() {
           </article>
         )}
       </section>
+        </>
+      )}
     </main>
   );
 }
