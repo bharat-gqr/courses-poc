@@ -258,6 +258,11 @@ body {
   font-size: 12px;
 }
 
+.topTenHead {
+  margin-top: 4px;
+  margin-bottom: -2px;
+}
+
 .miniNav {
   display: flex;
   gap: 6px;
@@ -403,6 +408,32 @@ body {
   z-index: 9999;
   transform: translateY(-6px) scale(1.04);
   box-shadow: 0 16px 30px rgba(15, 23, 42, 0.18);
+}
+
+.rankNumber {
+  position: absolute;
+  left: 8px;
+  bottom: -8px;
+  font-size: clamp(72px, 8vw, 132px);
+  line-height: 0.85;
+  font-weight: 800;
+  color: rgba(79, 70, 229, 0.3);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85),
+    0 8px 20px rgba(79, 70, 229, 0.16);
+  -webkit-text-stroke: 1px rgba(30, 41, 59, 0.3);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.rankedCard .learningBody {
+  position: relative;
+  z-index: 4;
+}
+
+.rankedCarouselWrap .learningViewport {
+  border-radius: 18px;
+  overflow: hidden;
 }
 
 .learningCard.expanded {

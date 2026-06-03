@@ -114,6 +114,79 @@ const learningCards = [
   },
 ];
 
+const topRankedCards = [
+  {
+    title: "AI Channel Growth Blueprint",
+    description: "A practical plan to scale content and improve watch time.",
+    duration: "7 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "YouTube Growth in 30 Days",
+    description: "The exact posting and packaging routine creators use.",
+    duration: "10 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "Reels That Cross 1M Views",
+    description: "Framework for hooks, retention loops, and payoff beats.",
+    duration: "12 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1611262588024-d12430b98920?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "Notification CTR Mastery",
+    description: "Improve click-through with better titles and thumbnails.",
+    duration: "8 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1551281044-8b55d7f6c6b1?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "Learner Journey Design",
+    description: "Structure content flow to maximize completion rates.",
+    duration: "9 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "Shorts Editing Speedrun",
+    description: "Edit faster while keeping rhythm and story clarity.",
+    duration: "11 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "Monetization Without Burnout",
+    description: "Build recurring revenue with sustainable production.",
+    duration: "6 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1553729459-efe14ef6055d?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "Audience Psychology Basics",
+    description: "Use demand cues and narrative tension to keep viewers.",
+    duration: "7 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "Brand + Personal Identity",
+    description: "Create a recognizable style that compounds over time.",
+    duration: "5 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1000&q=80",
+  },
+  {
+    title: "Content Ops for Teams",
+    description: "A lightweight workflow to ship consistently every week.",
+    duration: "8 clips",
+    thumbnail:
+      "https://images.unsplash.com/photo-1552581234-26160f608093?auto=format&fit=crop&w=1000&q=80",
+  },
+];
+
 const testimonials = [
   {
     name: "Nikita, Delhi",
@@ -296,6 +369,86 @@ function MentorCarousel({ mentors }) {
   );
 }
 
+function RankedCarousel({ cards }) {
+  const [cardsPerView, setCardsPerView] = useState(5);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      if (window.innerWidth < 720) setCardsPerView(1);
+      else if (window.innerWidth < 900) setCardsPerView(2);
+      else if (window.innerWidth < 1200) setCardsPerView(3);
+      else setCardsPerView(5);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const maxIndex = Math.max(0, cards.length - cardsPerView);
+
+  useEffect(() => {
+    if (index > maxIndex) setIndex(maxIndex);
+  }, [index, maxIndex]);
+
+  useEffect(() => {
+    if (maxIndex <= 0) return undefined;
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    }, 2600);
+    return () => clearInterval(timer);
+  }, [maxIndex]);
+
+  const nudge = (direction) => {
+    setIndex((prev) => {
+      if (direction > 0) return prev >= maxIndex ? 0 : prev + 1;
+      return prev <= 0 ? maxIndex : prev - 1;
+    });
+  };
+
+  return (
+    <div className="learningCarouselWrap rankedCarouselWrap">
+      <div className="learningViewport withCorners">
+        <button type="button" className="cornerNav left" onClick={() => nudge(-1)} aria-label="Previous Top 10 cards">
+          ←
+        </button>
+
+        <div
+          className="learningTrack"
+          style={{
+            transform: `translateX(-${(100 / cardsPerView) * index}%)`,
+          }}
+        >
+          {cards.map((card, idx) => {
+            const rank = idx + 1;
+            return (
+              <article
+                className="learningCard rankedCard"
+                key={`${card.title}-${idx}`}
+                style={{ flex: `0 0 ${100 / cardsPerView}%` }}
+              >
+                <img src={card.thumbnail} alt={card.title} className="learningThumb" />
+                <div className="rankNumber" aria-hidden="true">
+                  {rank}
+                </div>
+                <div className="learningBody">
+                  <h4>{card.title}</h4>
+                  <p>{card.description}</p>
+                  <span>{card.duration}</span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <button type="button" className="cornerNav right" onClick={() => nudge(1)} aria-label="Next Top 10 cards">
+          →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Page() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [showAllForYou, setShowAllForYou] = useState(false);
@@ -357,6 +510,11 @@ export default function Page() {
         ) : (
           <LearningCarousel cards={learningCards} />
         )}
+
+        <div className="sectionHead topTenHead">
+          <h3>For You Top 10</h3>
+        </div>
+        <RankedCarousel cards={topRankedCards} />
       </section>
 
       <section className="sectionBlock">
